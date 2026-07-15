@@ -1429,22 +1429,47 @@
       });
 
       // ── 그리기 입력 ──
-      function eventToCell(e) {
+      function eventToCell(e, clampToGrid) {
         var rect = dm.getBoundingClientRect();
         var px = e.clientX - rect.left;
         var py = e.clientY - rect.top;
         var c = Math.floor(px / step);
         var r = Math.floor(py / step);
+        if (clampToGrid) {
+          // 그리는 도중 캔버스를 살짝 벗어나도 선이 끊기지 않도록 경계로 붙임
+          r = Math.max(0, Math.min(ROWS - 1, r));
+          c = Math.max(0, Math.min(cols - 1, c));
+          return { r: r, c: c };
+        }
         if (r < 0 || r >= ROWS || c < 0 || c >= cols) return null;
         return { r: r, c: c };
       }
 
-      function paintCell(cell) {
-        if (!cell) return;
-        if (drawGrid[cell.r][cell.c] !== paintValue) {
-          drawGrid[cell.r][cell.c] = paintValue;
-          draw();
+      var lastCell = null;
+
+      function setCellValue(r, c) {
+        if (drawGrid[r][c] !== paintValue) {
+          drawGrid[r][c] = paintValue;
+          return true;
         }
+        return false;
+      }
+
+      // 두 셀 사이를 직선으로 이어 채움 (빠르게 그어도 선이 끊기지 않도록)
+      function paintLine(a, b) {
+        var changed = false;
+        var r0 = a.r, c0 = a.c, r1 = b.r, c1 = b.c;
+        var dr = Math.abs(r1 - r0), dc = Math.abs(c1 - c0);
+        var sr = r0 < r1 ? 1 : -1, sc = c0 < c1 ? 1 : -1;
+        var err = (dc > dr ? dc : -dr) / 2;
+        while (true) {
+          if (setCellValue(r0, c0)) changed = true;
+          if (r0 === r1 && c0 === c1) break;
+          var e2 = err;
+          if (e2 > -dc) { err -= dr; c0 += sc; }
+          if (e2 < dr) { err += dc; r0 += sr; }
+        }
+        return changed;
       }
 
       dm.addEventListener("pointerdown", function(e) {
@@ -1454,19 +1479,34 @@
         if (!cell) return;
         isPainting = true;
         paintValue = toolIsPen ? 1 : 0;
-        dm.setPointerCapture(e.pointerId);
-        paintCell(cell);
+        try { dm.setPointerCapture(e.pointerId); } catch(_) {}
+        lastCell = cell;
+        if (setCellValue(cell.r, cell.c)) draw();
       });
 
       dm.addEventListener("pointermove", function(e) {
         if (!isPainting || mode !== "draw" || marqueeOn) return;
         e.preventDefault();
-        paintCell(eventToCell(e));
+        // 브라우저가 합쳐 전달한 중간 이벤트까지 모두 사용 → 더 촘촘한 샘플링
+        var events = e.getCoalescedEvents ? e.getCoalescedEvents() : null;
+        if (!events || events.length === 0) events = [e];
+        var changed = false;
+        for (var i = 0; i < events.length; i++) {
+          var cell = eventToCell(events[i], true);
+          if (lastCell) {
+            if (paintLine(lastCell, cell)) changed = true;
+          } else {
+            if (setCellValue(cell.r, cell.c)) changed = true;
+          }
+          lastCell = cell;
+        }
+        if (changed) draw();
       });
 
       function endPaint(e) {
         if (!isPainting) return;
         isPainting = false;
+        lastCell = null;
         try { dm.releasePointerCapture(e.pointerId); } catch(_) {}
       }
       dm.addEventListener("pointerup", endPaint);
@@ -1531,6 +1571,13 @@
           var base64 = String(reader.result).split(",")[1];
           P.Filesystem.writeFile({ path: filename, data: base64, directory: "CACHE" })
             .then(function(res) {
+              // 사진첩에 바로 저장, 실패(권한 거부 등) 시 공유 시트로 폴백
+              if (P.Media && P.Media.savePhoto) {
+                return P.Media.savePhoto({ path: res.uri }).catch(function(mediaErr) {
+                  console.warn("사진첩 저장 실패, 공유 시트로 폴백:", mediaErr);
+                  return P.Share.share({ files: [res.uri] });
+                });
+              }
               return P.Share.share({ files: [res.uri] });
             })
             .then(function() { if (onDone) onDone(true); })
