@@ -146,6 +146,14 @@
       background: rgba(255, 90, 90, 0.12);
       color: #ff8888;
     }
+    .tool-btn:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+    .tool-btn:disabled:hover {
+      color: rgba(255, 255, 255, 0.6);
+      background: transparent;
+    }
     .tool-btn.accent {
       background: rgba(183, 148, 255, 0.12);
       border-color: rgba(183, 148, 255, 0.35);
@@ -546,6 +554,19 @@
         <button class="width-btn" id="brushPlus">+</button>
       </div>
       <div class="tool-sep"></div>
+      <button class="tool-btn" id="undoBtn" title="실행 취소 (Ctrl+Z)" aria-label="실행 취소">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 7v6h6"/>
+          <path d="M21 17a9 9 0 0 0-15-6.7L3 13"/>
+        </svg>
+      </button>
+      <button class="tool-btn" id="redoBtn" title="다시 실행 (Ctrl+Shift+Z)" aria-label="다시 실행">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 7v6h-6"/>
+          <path d="M3 17a9 9 0 0 1 15-6.7L21 13"/>
+        </svg>
+      </button>
+      <div class="tool-sep"></div>
       <div class="width-ctrl">
         <span>가로</span>
         <button class="width-btn" id="widthMinus">−</button>
@@ -710,6 +731,8 @@
       var brushMinus = document.getElementById("brushMinus");
       var brushPlus = document.getElementById("brushPlus");
       var brushVal = document.getElementById("brushVal");
+      var undoBtn = document.getElementById("undoBtn");
+      var redoBtn = document.getElementById("redoBtn");
       var dm = document.getElementById("dm");
       var dc = dm.getContext("2d");
       var emptyMsg = document.getElementById("emptyMsg");
@@ -968,6 +991,7 @@
 
           // 클릭 → 불러오기 (텍스트 색상은 변경하지 않음)
           item.addEventListener("click", function() {
+            pushUndo();
             drawGrid = scalePattern(stringToGrid(pat.grid));
             drawCols = drawGrid[0] ? drawGrid[0].length : MIN_DRAW_COLS;
             widthVal.textContent = drawCols;
@@ -1478,6 +1502,73 @@
         return { r: r, c: c };
       }
 
+      // ── 실행 취소 / 다시 실행 ──
+      var undoStack = [], redoStack = [];
+      var pendingSnapshot = null; // 스트로크 시작 시점의 상태 (실제 변경 발생 시에만 커밋)
+      var MAX_HISTORY = 50;
+
+      function snapshotDrawing() {
+        var g = [];
+        for (var r = 0; r < ROWS; r++) g[r] = drawGrid[r].slice();
+        return { grid: g, cols: drawCols };
+      }
+
+      function restoreDrawing(snap) {
+        drawGrid = snap.grid;
+        drawCols = snap.cols;
+        widthVal.textContent = drawCols;
+        if (mode === "draw") build();
+      }
+
+      function updateHistoryButtons() {
+        undoBtn.disabled = undoStack.length === 0;
+        redoBtn.disabled = redoStack.length === 0;
+      }
+
+      function pushUndo(snap) {
+        undoStack.push(snap || snapshotDrawing());
+        if (undoStack.length > MAX_HISTORY) undoStack.shift();
+        redoStack = [];
+        updateHistoryButtons();
+      }
+
+      function commitPending() {
+        if (pendingSnapshot) {
+          pushUndo(pendingSnapshot);
+          pendingSnapshot = null;
+        }
+      }
+
+      function undoDrawing() {
+        if (undoStack.length === 0) return;
+        redoStack.push(snapshotDrawing());
+        restoreDrawing(undoStack.pop());
+        updateHistoryButtons();
+      }
+
+      function redoDrawing() {
+        if (redoStack.length === 0) return;
+        undoStack.push(snapshotDrawing());
+        restoreDrawing(redoStack.pop());
+        updateHistoryButtons();
+      }
+
+      undoBtn.addEventListener("click", undoDrawing);
+      redoBtn.addEventListener("click", redoDrawing);
+      updateHistoryButtons();
+
+      // Ctrl+Z / Ctrl+Shift+Z (텍스트 입력 중에는 제외)
+      document.addEventListener("keydown", function(e) {
+        if (mode !== "draw") return;
+        var t = e.target;
+        if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return;
+        if ((e.ctrlKey || e.metaKey) && (e.key === "z" || e.key === "Z")) {
+          e.preventDefault();
+          if (e.shiftKey) redoDrawing();
+          else undoDrawing();
+        }
+      });
+
       var lastCell = null;
       var brushSize = 1; // 선 굵기 1~4
 
@@ -1538,7 +1629,11 @@
         paintValue = toolIsPen ? 1 : 0;
         try { dm.setPointerCapture(e.pointerId); } catch(_) {}
         lastCell = cell;
-        if (paintBrushAt(cell.r, cell.c)) draw();
+        pendingSnapshot = snapshotDrawing();
+        if (paintBrushAt(cell.r, cell.c)) {
+          commitPending();
+          draw();
+        }
       });
 
       dm.addEventListener("pointermove", function(e) {
@@ -1557,13 +1652,17 @@
           }
           lastCell = cell;
         }
-        if (changed) draw();
+        if (changed) {
+          commitPending();
+          draw();
+        }
       });
 
       function endPaint(e) {
         if (!isPainting) return;
         isPainting = false;
         lastCell = null;
+        pendingSnapshot = null;
         try { dm.releasePointerCapture(e.pointerId); } catch(_) {}
       }
       dm.addEventListener("pointerup", endPaint);
@@ -1579,6 +1678,7 @@
       eraserBtn.addEventListener("click", function() { setTool(false); });
 
       clearBtn.addEventListener("click", function() {
+        if (!isDrawingEmpty()) pushUndo();
         drawGrid = makeEmptyGrid(drawCols);
         drawColor = null;
         if (mode === "draw") {
@@ -1591,6 +1691,7 @@
       function resizeDrawGrid(newCols) {
         newCols = Math.max(MIN_DRAW_COLS, Math.min(MAX_DRAW_COLS, newCols));
         if (newCols === drawCols) return;
+        pushUndo();
         var g = makeEmptyGrid(newCols);
         var copyCols = Math.min(drawCols, newCols);
         for (var r = 0; r < ROWS; r++) {
@@ -1670,7 +1771,7 @@
         ex.height = h * scale;
         var ec = ex.getContext("2d");
         ec.scale(scale, scale);
-        ec.fillStyle = "#07090c";
+        ec.fillStyle = "#000000"; // PNG 배경: 순수 검정
         ec.fillRect(0, 0, w, h);
         ec.translate(pad, pad);
         paintTo(ec, marqueeOffset, captureCols);
