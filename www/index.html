@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
   <title>도트매트릭스 LED 패널</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <script src="gif.js"></script>
   <style>
     @font-face {
@@ -225,12 +227,11 @@
     }
     .color-btn:hover { transform: scale(1.12); }
     .color-btn.active { box-shadow: 0 0 0 2px #07090c, 0 0 0 4px currentColor; }
-    .color-btn[data-k="green"]  { background: #2fe6a6; color: #2fe6a6; }
-    .color-btn[data-k="amber"]  { background: #ffcf4d; color: #ffcf4d; }
-    .color-btn[data-k="red"]    { background: #ff5a5a; color: #ff5a5a; }
-    .color-btn[data-k="cyan"]   { background: #4dd2ff; color: #4dd2ff; }
-    .color-btn[data-k="white"]  { background: #f4f6f8; color: #f4f6f8; }
-    .color-btn[data-k="purple"] { background: #b794ff; color: #b794ff; }
+    .color-btn[data-k="white"]  { background: #ffffff; color: #ffffff; }
+    .color-btn[data-k="yellow"] { background: #FFF820; color: #FFF820; }
+    .color-btn[data-k="green"]  { background: #4DFF6B; color: #4DFF6B; }
+    .color-btn[data-k="blue"]   { background: #007EFF; color: #007EFF; }
+    .color-btn[data-k="pink"]   { background: #FF0068; color: #FF0068; }
 
     .switch-wrap {
       display: flex; align-items: center; gap: 10px;
@@ -539,6 +540,13 @@
       </button>
       <div class="tool-sep"></div>
       <div class="width-ctrl">
+        <span>굵기</span>
+        <button class="width-btn" id="brushMinus">−</button>
+        <span class="width-val" id="brushVal">1</span>
+        <button class="width-btn" id="brushPlus">+</button>
+      </div>
+      <div class="tool-sep"></div>
+      <div class="width-ctrl">
         <span>가로</span>
         <button class="width-btn" id="widthMinus">−</button>
         <span class="width-val" id="widthVal">80</span>
@@ -584,12 +592,11 @@
       <h3>패턴 저장</h3>
       <input type="text" id="patternName" placeholder="패턴 이름 (예: 하트)" maxlength="20" autocomplete="off" />
       <div class="save-colors" id="saveColors">
-        <button class="color-btn" data-k="green" aria-label="그린"></button>
-        <button class="color-btn" data-k="amber" aria-label="앰버"></button>
-        <button class="color-btn" data-k="red" aria-label="레드"></button>
-        <button class="color-btn" data-k="cyan" aria-label="시안"></button>
-        <button class="color-btn" data-k="purple" aria-label="퍼플"></button>
         <button class="color-btn" data-k="white" aria-label="화이트"></button>
+        <button class="color-btn" data-k="yellow" aria-label="옐로"></button>
+        <button class="color-btn" data-k="green" aria-label="그린"></button>
+        <button class="color-btn" data-k="blue" aria-label="블루"></button>
+        <button class="color-btn" data-k="pink" aria-label="핑크"></button>
       </div>
       <div class="modal-btns">
         <button class="modal-btn ghost" id="saveCancel">취소</button>
@@ -612,12 +619,11 @@
   <div class="bottom-bar">
     <div class="controls">
       <div class="color-group" id="ctrl">
-        <button class="color-btn active" data-k="green" aria-label="그린"></button>
-        <button class="color-btn" data-k="amber" aria-label="앰버"></button>
-        <button class="color-btn" data-k="red" aria-label="레드"></button>
-        <button class="color-btn" data-k="cyan" aria-label="시안"></button>
-        <button class="color-btn" data-k="purple" aria-label="퍼플"></button>
         <button class="color-btn" data-k="white" aria-label="화이트"></button>
+        <button class="color-btn" data-k="yellow" aria-label="옐로"></button>
+        <button class="color-btn active" data-k="green" aria-label="그린"></button>
+        <button class="color-btn" data-k="blue" aria-label="블루"></button>
+        <button class="color-btn" data-k="pink" aria-label="핑크"></button>
       </div>
       <div class="divider"></div>
       <label class="switch-wrap" id="marqueeWrap">
@@ -679,12 +685,11 @@
       var toolIsPen = true;
 
       var PRESETS = {
-        green:  { dot: "#2fe6a6", glow: "#1D9E75" },
-        amber:  { dot: "#ffcf4d", glow: "#ff9d00" },
-        red:    { dot: "#ff5a5a", glow: "#ff2d2d" },
-        cyan:   { dot: "#4dd2ff", glow: "#00a3ff" },
-        purple: { dot: "#b794ff", glow: "#8b5cf6" },
-        white:  { dot: "#f4f6f8", glow: "#cfd6dc" }
+        white:  { dot: "#ffffff", glow: "#cfd6dc" },
+        yellow: { dot: "#FFF820", glow: "#d8ce00" },
+        green:  { dot: "#4DFF6B", glow: "#00d629" },
+        blue:   { dot: "#007EFF", glow: "#0057c8" },
+        pink:   { dot: "#FF0068", glow: "#c80052" }
       };
 
       // ── DOM ──
@@ -702,6 +707,9 @@
       var widthMinus = document.getElementById("widthMinus");
       var widthPlus = document.getElementById("widthPlus");
       var widthVal = document.getElementById("widthVal");
+      var brushMinus = document.getElementById("brushMinus");
+      var brushPlus = document.getElementById("brushPlus");
+      var brushVal = document.getElementById("brushVal");
       var dm = document.getElementById("dm");
       var dc = dm.getContext("2d");
       var emptyMsg = document.getElementById("emptyMsg");
@@ -1471,13 +1479,32 @@
       }
 
       var lastCell = null;
+      var brushSize = 1; // 선 굵기 1~4
 
-      function setCellValue(r, c) {
-        if (drawGrid[r][c] !== paintValue) {
-          drawGrid[r][c] = paintValue;
-          return true;
+      function setBrushSize(n) {
+        brushSize = Math.max(1, Math.min(4, n));
+        brushVal.textContent = brushSize;
+      }
+      brushMinus.addEventListener("click", function() { setBrushSize(brushSize - 1); });
+      brushPlus.addEventListener("click", function() { setBrushSize(brushSize + 1); });
+
+      // 원형 브러시로 (r, c) 주변 셀 칠하기
+      function paintBrushAt(r, c) {
+        var changed = false;
+        var rad = brushSize - 1;
+        var limit = rad * rad + rad * 0.5;
+        for (var dr = -rad; dr <= rad; dr++) {
+          for (var dc = -rad; dc <= rad; dc++) {
+            if (dr * dr + dc * dc > limit) continue;
+            var rr = r + dr, cc = c + dc;
+            if (rr < 0 || rr >= ROWS || cc < 0 || cc >= drawCols) continue;
+            if (drawGrid[rr][cc] !== paintValue) {
+              drawGrid[rr][cc] = paintValue;
+              changed = true;
+            }
+          }
         }
-        return false;
+        return changed;
       }
 
       // 두 셀 사이를 직선으로 이어 채움 (빠르게 그어도 선이 끊기지 않도록)
@@ -1488,7 +1515,7 @@
         var sr = r0 < r1 ? 1 : -1, sc = c0 < c1 ? 1 : -1;
         var err = (dc > dr ? dc : -dr) / 2;
         while (true) {
-          if (setCellValue(r0, c0)) changed = true;
+          if (paintBrushAt(r0, c0)) changed = true;
           if (r0 === r1 && c0 === c1) break;
           var e2 = err;
           if (e2 > -dc) { err -= dr; c0 += sc; }
@@ -1498,7 +1525,12 @@
       }
 
       dm.addEventListener("pointerdown", function(e) {
-        if (mode !== "draw" || marqueeOn) return;
+        if (mode !== "draw") return;
+        if (marqueeOn) {
+          // 자동 흐름 중에는 그릴 수 없음을 안내
+          showStatus("자동 흐름을 해제해주세요");
+          return;
+        }
         e.preventDefault();
         var cell = eventToCell(e);
         if (!cell) return;
@@ -1506,7 +1538,7 @@
         paintValue = toolIsPen ? 1 : 0;
         try { dm.setPointerCapture(e.pointerId); } catch(_) {}
         lastCell = cell;
-        if (setCellValue(cell.r, cell.c)) draw();
+        if (paintBrushAt(cell.r, cell.c)) draw();
       });
 
       dm.addEventListener("pointermove", function(e) {
@@ -1521,7 +1553,7 @@
           if (lastCell) {
             if (paintLine(lastCell, cell)) changed = true;
           } else {
-            if (setCellValue(cell.r, cell.c)) changed = true;
+            if (paintBrushAt(cell.r, cell.c)) changed = true;
           }
           lastCell = cell;
         }
@@ -1792,8 +1824,8 @@
       var uiHintShown = false;
       var displayEl = document.querySelector(".display");
       displayEl.addEventListener("click", function(e) {
-        // 그리기 모드에서 캔버스 터치는 그리기 동작이므로 토글하지 않음
-        if (mode === "draw" && !marqueeOn && e.target === dm) return;
+        // 그리기 모드에서 캔버스 터치는 그리기(또는 안내 팝업) 동작이므로 토글하지 않음
+        if (mode === "draw" && e.target === dm) return;
         uiHidden = !uiHidden;
         document.body.classList.toggle("ui-hidden", uiHidden);
         // 전체 화면 영역에 맞춰 매트릭스 다시 계산
