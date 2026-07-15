@@ -1,0 +1,33 @@
+# Codemagic CI - Windows PC에서 Mac 없이 iOS 앱을 빌드/제출하기 위한 설정
+# 사용법: 이 프로젝트를 GitHub에 올린 뒤 codemagic.io에서 리포지토리 연결
+workflows:
+  ios-appstore:
+    name: iOS App Store 빌드
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: codemagic  # Codemagic 대시보드에서 App Store Connect API 키 연결 후 이름 일치시키기
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.yunhee.dotmatrix
+      node: 22
+      xcode: latest
+    scripts:
+      - name: 의존성 설치
+        script: npm install
+      - name: Capacitor 동기화
+        script: npx cap sync ios
+      - name: 서명 프로파일 적용
+        script: xcode-project use-profiles
+      - name: IPA 빌드
+        script: |
+          xcode-project build-ipa \
+            --project ios/App/App.xcodeproj \
+            --scheme App
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integrations
+        submit_to_testflight: true

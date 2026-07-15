@@ -1,0 +1,18 @@
+{
+  "name": "dotmatrix-led",
+  "version": "1.0.0",
+  "description": "도트매트릭스 LED 패널 - 텍스트와 그림을 LED 전광판 스타일로 표시",
+  "private": true,
+  "scripts": {
+    "sync": "cap sync"
+  },
+  "dependencies": {
+    "@capacitor/cli": "^8.4.1",
+    "@capacitor/core": "^8.4.1",
+    "@capacitor/filesystem": "^8.1.2",
+    "@capacitor/ios": "^8.4.1",
+    "@capacitor/share": "^8.0.1",
+    "gif.js": "^0.2.0",
+    "pretendard": "^1.3.9"
+  }
+}

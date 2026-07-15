@@ -1,0 +1,9 @@
+{
+  "appId": "com.yunhee.dotmatrix",
+  "appName": "도트매트릭스",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#07090c"
+  }
+}
