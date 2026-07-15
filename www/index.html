@@ -184,6 +184,8 @@
       display: flex; align-items: center; justify-content: center;
     }
     canvas { display: block; }
+    /* 세로 화면(폰)에서는 전광판을 90도 회전해 긴 축을 따라 표시 */
+    #dm.rotated { transform: rotate(90deg); }
     #dm.drawable { cursor: crosshair; touch-action: none; }
     .empty-msg { color: rgba(255, 255, 255, 0.2); font-size: 16px; text-align: center; }
 
@@ -1019,26 +1021,42 @@
           : { top: SAFE_TOP, bottom: SAFE_BOTTOM, side: SAFE_SIDE };
       }
 
-      function getMarqueeParams() {
+      // 세로 화면(폰)에서는 전광판을 90도 회전 → 긴 축이 글자 진행 방향
+      function isPanelRotated() {
+        return window.innerHeight > window.innerWidth;
+      }
+
+      // across: 글자 진행 방향으로 쓸 수 있는 픽셀, down: 행 방향 픽셀
+      function panelAvail() {
         var sa = safeArea();
-        var vh = window.innerHeight - sa.top - sa.bottom;
+        if (isPanelRotated()) {
+          return {
+            across: window.innerHeight - sa.top - sa.bottom,
+            down: window.innerWidth - sa.side * 2
+          };
+        }
+        return {
+          across: window.innerWidth - sa.side * 2,
+          down: window.innerHeight - sa.top - sa.bottom
+        };
+      }
+
+      function getMarqueeParams() {
+        var av = panelAvail();
         var maxStep = uiHidden ? 60 : 24;
-        var s = Math.floor(Math.min(vh / ROWS, maxStep));
+        var s = Math.floor(Math.min(av.down / ROWS, maxStep));
         s = Math.max(6, Math.min(60, s));
-        var availW = window.innerWidth - sa.side * 2;
-        var vCols = Math.floor(availW / s);
+        var vCols = Math.floor(av.across / s);
         return { step: s, dot: s * DOT_RATIO, visibleCols: vCols };
       }
 
       function computeSize() {
         if (cols === 0) return;
-        var sa = safeArea();
-        var vw = window.innerWidth - sa.side * 2;
-        var vh = window.innerHeight - sa.top - sa.bottom;
+        var av = panelAvail();
         if (marqueeOn) {
-          step = Math.floor(Math.min(vh / ROWS, uiHidden ? 60 : 24));
+          step = Math.floor(Math.min(av.down / ROWS, uiHidden ? 60 : 24));
         } else {
-          step = Math.floor(Math.min(vw / cols, vh / ROWS));
+          step = Math.floor(Math.min(av.across / cols, av.down / ROWS));
         }
         step = Math.max(6, Math.min(60, step));
         DOT = step * DOT_RATIO;
@@ -1046,11 +1064,11 @@
 
       function setupCanvas() {
         if (marqueeOn) {
-          var availW = window.innerWidth - safeArea().side * 2;
-          visibleCols = Math.floor(availW / step);
+          visibleCols = Math.floor(panelAvail().across / step);
         } else {
           visibleCols = cols;
         }
+        dm.classList.toggle("rotated", isPanelRotated());
         var W = visibleCols * step;
         var H = ROWS * step;
         var dpr = window.devicePixelRatio || 1;
@@ -1431,8 +1449,15 @@
       // ── 그리기 입력 ──
       function eventToCell(e, clampToGrid) {
         var rect = dm.getBoundingClientRect();
-        var px = e.clientX - rect.left;
-        var py = e.clientY - rect.top;
+        var px, py;
+        if (isPanelRotated()) {
+          // 90도 회전 상태: 화면 세로 = 캔버스 가로, 화면 가로(반전) = 캔버스 세로
+          px = e.clientY - rect.top;
+          py = rect.right - e.clientX;
+        } else {
+          px = e.clientX - rect.left;
+          py = e.clientY - rect.top;
+        }
         var c = Math.floor(px / step);
         var r = Math.floor(py / step);
         if (clampToGrid) {
