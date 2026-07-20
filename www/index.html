@@ -17,10 +17,25 @@
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; overflow: hidden; }
+
+    /* select.codes 참고 디자인 토큰 (zinc 다크 + 하드웨어 모듈 카드)
+       --accent는 선택한 LED 색상을 따라 JS에서 갱신됨 */
+    :root {
+      --bg: #0a0a0c;
+      --card: rgba(24, 24, 27, 0.6);
+      --card-solid: #131316;
+      --edge: rgba(39, 39, 42, 0.8);
+      --edge-lite: rgba(63, 63, 70, 0.6);
+      --ink: #fafafa;
+      --ink-dim: rgba(250, 250, 250, 0.55);
+      --label: #71717a;
+      --accent: #4DFF6B;
+    }
+
     body {
       font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-      background: #07090c;
-      color: #f4f6f8;
+      background: var(--bg);
+      color: var(--ink);
       position: relative;
     }
 
@@ -30,7 +45,7 @@
       padding: calc(16px + env(safe-area-inset-top, 0px)) 24px 16px;
       display: flex; flex-direction: column; align-items: center; gap: 10px;
       z-index: 10;
-      background: linear-gradient(to bottom, rgba(7, 9, 12, 0.97) 0%, rgba(7, 9, 12, 0) 100%);
+      background: linear-gradient(to bottom, rgba(10, 10, 12, 0.97) 0%, rgba(10, 10, 12, 0) 100%);
       transition: opacity 0.35s ease, transform 0.35s ease;
     }
     body.ui-hidden .top-bar {
@@ -39,11 +54,18 @@
       pointer-events: none;
     }
 
+    /* 하드웨어 모듈 카드 공통 룩: zinc-900/60 + zinc-800 테두리 + 상단 하이라이트 */
+    .mode-tabs, .draw-tools, .controls {
+      background: var(--card);
+      border: 1px solid var(--edge);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
     .mode-tabs {
       display: flex;
-      background: rgba(255, 255, 255, 0.06);
-      border: 0.5px solid rgba(255, 255, 255, 0.12);
-      border-radius: 10px;
+      border-radius: 14px;
       padding: 3px;
       gap: 2px;
     }
@@ -51,20 +73,21 @@
       padding: 7px 18px;
       border: none;
       background: transparent;
-      color: rgba(255, 255, 255, 0.55);
+      color: var(--label);
       font-size: 13px;
       font-weight: 500;
       font-family: inherit;
-      border-radius: 8px;
+      border-radius: 11px;
       cursor: pointer;
       transition: all 0.2s ease;
       display: flex; align-items: center; gap: 6px;
     }
     .mode-tab svg { width: 14px; height: 14px; }
-    .mode-tab:hover { color: rgba(255, 255, 255, 0.85); }
+    .mode-tab:hover { color: var(--ink); }
     .mode-tab.active {
-      background: rgba(47, 230, 166, 0.15);
-      color: #2fe6a6;
+      background: rgba(255, 255, 255, 0.08);
+      background: color-mix(in srgb, var(--accent) 13%, transparent);
+      color: var(--accent);
     }
 
     .input-row {
@@ -74,28 +97,30 @@
     #textInput {
       flex: 1;
       padding: 11px 16px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 0.5px solid rgba(255, 255, 255, 0.15);
-      border-radius: 10px;
-      color: #f4f6f8; font-size: 16px;
+      background: var(--card);
+      border: 1px solid var(--edge);
+      border-radius: 14px;
+      color: var(--ink); font-size: 16px;
       font-family: inherit; outline: none;
       transition: all 0.2s ease;
       text-align: center;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
     }
     #textInput:focus {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(47, 230, 166, 0.5);
-      box-shadow: 0 0 0 3px rgba(47, 230, 166, 0.1);
+      border-color: var(--edge-lite);
+      border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
     }
-    #textInput::placeholder { color: rgba(255, 255, 255, 0.3); }
+    #textInput::placeholder { color: var(--label); }
 
     .insert-btn {
       flex-shrink: 0;
       padding: 10px 14px;
-      background: rgba(183, 148, 255, 0.12);
-      border: 0.5px solid rgba(183, 148, 255, 0.4);
-      border-radius: 10px;
-      color: #b794ff;
+      background: var(--card);
+      border: 1px solid var(--edge-lite);
+      border-radius: 14px;
+      color: var(--ink-dim);
       font-size: 13px;
       font-weight: 500;
       font-family: inherit;
@@ -103,9 +128,11 @@
       transition: all 0.2s ease;
       display: flex; align-items: center; gap: 6px;
       white-space: nowrap;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
     }
     .insert-btn:hover {
-      background: rgba(183, 148, 255, 0.22);
+      color: var(--ink);
+      border-color: rgba(113, 113, 122, 0.8);
       transform: translateY(-1px);
     }
     .insert-btn svg { width: 14px; height: 14px; }
@@ -115,9 +142,7 @@
       display: none;
       gap: 8px;
       align-items: center;
-      background: rgba(255, 255, 255, 0.05);
-      border: 0.5px solid rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
+      border-radius: 16px;
       padding: 6px 10px;
     }
     .draw-tools.visible { display: flex; }
@@ -125,9 +150,9 @@
     .tool-btn {
       padding: 7px 12px;
       background: transparent;
-      border: 0.5px solid transparent;
-      border-radius: 7px;
-      color: rgba(255, 255, 255, 0.6);
+      border: 1px solid transparent;
+      border-radius: 10px;
+      color: var(--ink-dim);
       font-size: 12.5px;
       font-weight: 500;
       font-family: inherit;
@@ -136,14 +161,16 @@
       display: flex; align-items: center; gap: 5px;
     }
     .tool-btn svg { width: 14px; height: 14px; }
-    .tool-btn:hover { color: #f4f6f8; background: rgba(255, 255, 255, 0.07); }
+    .tool-btn:hover { color: var(--ink); background: rgba(255, 255, 255, 0.06); }
     .tool-btn.active {
-      background: rgba(47, 230, 166, 0.15);
-      border-color: rgba(47, 230, 166, 0.35);
-      color: #2fe6a6;
+      background: rgba(255, 255, 255, 0.08);
+      background: color-mix(in srgb, var(--accent) 13%, transparent);
+      border-color: rgba(255, 255, 255, 0.14);
+      border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+      color: var(--accent);
     }
     .tool-btn.danger:hover {
-      background: rgba(255, 90, 90, 0.12);
+      background: rgba(255, 90, 90, 0.1);
       color: #ff8888;
     }
     .tool-btn:disabled {
@@ -151,32 +178,33 @@
       cursor: default;
     }
     .tool-btn:disabled:hover {
-      color: rgba(255, 255, 255, 0.6);
+      color: var(--ink-dim);
       background: transparent;
     }
     .tool-btn.accent {
-      background: rgba(183, 148, 255, 0.12);
-      border-color: rgba(183, 148, 255, 0.35);
-      color: #b794ff;
+      background: rgba(255, 255, 255, 0.06);
+      border-color: var(--edge-lite);
+      color: var(--ink);
     }
     .tool-btn.accent:hover {
-      background: rgba(183, 148, 255, 0.22);
-      color: #c9adff;
+      background: rgba(255, 255, 255, 0.1);
     }
 
-    .tool-sep { width: 0.5px; height: 20px; background: rgba(255, 255, 255, 0.15); }
+    .tool-sep { width: 1px; height: 20px; background: var(--edge); }
 
     .width-ctrl {
       display: flex; align-items: center; gap: 6px;
-      color: rgba(255, 255, 255, 0.55);
-      font-size: 12px;
+      color: var(--label);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
     }
     .width-btn {
       width: 24px; height: 24px;
-      border-radius: 6px;
-      border: 0.5px solid rgba(255, 255, 255, 0.15);
-      background: rgba(255, 255, 255, 0.05);
-      color: rgba(255, 255, 255, 0.7);
+      border-radius: 8px;
+      border: 1px solid var(--edge-lite);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--ink-dim);
       font-size: 14px;
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
@@ -184,8 +212,8 @@
       font-family: inherit;
       line-height: 1;
     }
-    .width-btn:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
-    .width-val { min-width: 30px; text-align: center; font-variant-numeric: tabular-nums; }
+    .width-btn:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+    .width-val { min-width: 30px; text-align: center; font-variant-numeric: tabular-nums; color: var(--ink); font-size: 12px; }
 
     /* ── 중앙 디스플레이 ── */
     .display {
@@ -194,10 +222,20 @@
       display: flex; align-items: center; justify-content: center;
     }
     canvas { display: block; }
+    /* 전광판 베젤: 참고 디자인의 하드웨어 모듈 카드 */
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--edge);
+      border-radius: 24px;
+      padding: 13px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 24px 60px rgba(0, 0, 0, 0.45);
+      display: flex; align-items: center; justify-content: center;
+    }
     /* 세로 화면(폰)에서는 전광판을 90도 회전해 긴 축을 따라 표시 */
-    #dm.rotated { transform: rotate(90deg); }
+    .panel.rotated { transform: rotate(90deg); }
+    #dm { background: rgba(0, 0, 0, 0.4); border-radius: 12px; }
     #dm.drawable { cursor: crosshair; touch-action: none; }
-    .empty-msg { color: rgba(255, 255, 255, 0.2); font-size: 16px; text-align: center; }
+    .empty-msg { color: var(--label); font-size: 15px; text-align: center; padding: 28px 36px; }
 
     /* ── 하단 바 ── */
     .bottom-bar {
@@ -205,7 +243,7 @@
       padding: 20px 24px calc(24px + env(safe-area-inset-bottom, 0px));
       display: flex; justify-content: center;
       z-index: 10;
-      background: linear-gradient(to top, rgba(7, 9, 12, 0.95) 0%, rgba(7, 9, 12, 0) 100%);
+      background: linear-gradient(to top, rgba(10, 10, 12, 0.95) 0%, rgba(10, 10, 12, 0) 100%);
       transition: opacity 0.35s ease, transform 0.35s ease;
     }
     body.ui-hidden .bottom-bar {
@@ -214,27 +252,38 @@
       pointer-events: none;
     }
     .controls {
-      display: flex; gap: 14px; flex-wrap: wrap;
-      justify-content: center; align-items: center;
-      background: rgba(255, 255, 255, 0.04);
-      border-radius: 12px;
-      padding: 12px 18px;
-      border: 0.5px solid rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      display: flex; gap: 26px; flex-wrap: wrap;
+      justify-content: center; align-items: flex-start;
+      border-radius: 20px;
+      padding: 14px 24px 11px;
     }
+
+    /* 참고 디자인의 자간 넓은 마이크로 라벨 (모듈명) */
+    .ctrl-group {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 8px;
+    }
+    .group-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--label);
+      transition: color 0.25s;
+    }
+    .ctrl-group:has(.switch-wrap.on) .group-label { color: var(--accent); }
+
     .color-group { display: flex; gap: 10px; }
-    .divider { width: 0.5px; height: 28px; background: rgba(255, 255, 255, 0.15); }
 
     .color-btn {
-      width: 32px; height: 32px;
+      width: 30px; height: 30px;
       border-radius: 50%;
-      border: 0.5px solid rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       cursor: pointer; padding: 0;
       transition: all 0.2s ease;
     }
     .color-btn:hover { transform: scale(1.12); }
-    .color-btn.active { box-shadow: 0 0 0 2px #07090c, 0 0 0 4px currentColor; }
+    .color-btn.active { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px currentColor; }
     .color-btn[data-k="white"]  { background: #ffffff; color: #ffffff; }
     .color-btn[data-k="yellow"] { background: #FFF820; color: #FFF820; }
     .color-btn[data-k="green"]  { background: #4DFF6B; color: #4DFF6B; }
@@ -242,44 +291,44 @@
     .color-btn[data-k="pink"]   { background: #FF0068; color: #FF0068; }
 
     .switch-wrap {
-      display: flex; align-items: center; gap: 10px;
-      cursor: pointer; user-select: none; padding: 4px 8px;
+      display: flex; align-items: center;
+      cursor: pointer; user-select: none;
+      padding: 4px 0;
     }
-    .switch-text {
-      font-size: 13px; font-weight: 500;
-      color: rgba(255, 255, 255, 0.7);
-      transition: color 0.25s;
-    }
-    .switch { position: relative; width: 38px; height: 22px; display: inline-block; flex-shrink: 0; }
+    .switch { position: relative; width: 40px; height: 22px; display: inline-block; flex-shrink: 0; }
     .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
     .switch-track {
       position: absolute; top: 0; left: 0;
       width: 100%; height: 100%;
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid var(--edge-lite);
       border-radius: 11px;
-      transition: background 0.25s ease;
+      transition: background 0.25s ease, border-color 0.25s ease;
     }
     .switch-track::after {
       content: ""; position: absolute;
       top: 2px; left: 2px;
-      width: 18px; height: 18px;
-      background: #f4f6f8;
+      width: 16px; height: 16px;
+      background: var(--ink);
       border-radius: 50%;
       transition: transform 0.25s ease, background 0.25s ease;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
     }
-    .switch input:checked + .switch-track { background: #2fe6a6; }
-    .switch input:checked + .switch-track::after { transform: translateX(16px); background: #fff; }
-    .switch-wrap:hover .switch-track { background: rgba(255, 255, 255, 0.22); }
-    .switch-wrap:hover .switch input:checked + .switch-track { background: #3eecae; }
-    .switch-wrap.on .switch-text { color: #2fe6a6; }
+    .switch input:checked + .switch-track { background: var(--accent); border-color: transparent; }
+    .switch input:checked + .switch-track::after { transform: translateX(18px); background: var(--bg); }
+    .switch-wrap:hover .switch-track { background: rgba(255, 255, 255, 0.2); }
+    .switch-wrap:hover .switch input:checked + .switch-track { background: var(--accent); filter: brightness(1.1); }
 
+    .export-group { display: flex; gap: 8px; }
     .export-btn {
       padding: 8px 14px;
-      background: rgba(47, 230, 166, 0.12);
-      border: 0.5px solid rgba(47, 230, 166, 0.4);
-      border-radius: 8px;
-      color: #2fe6a6;
+      background: rgba(255, 255, 255, 0.06);
+      background: color-mix(in srgb, var(--accent) 10%, transparent);
+      border: 1px solid var(--edge-lite);
+      border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+      border-radius: 11px;
+      color: var(--ink);
+      color: var(--accent);
       font-size: 13px; font-weight: 500;
       font-family: inherit; cursor: pointer;
       transition: all 0.2s ease;
@@ -287,7 +336,8 @@
       min-width: 92px; justify-content: center;
     }
     .export-btn:hover:not(:disabled) {
-      background: rgba(47, 230, 166, 0.2);
+      background: rgba(255, 255, 255, 0.1);
+      background: color-mix(in srgb, var(--accent) 18%, transparent);
       transform: translateY(-1px);
     }
     .export-btn:disabled { opacity: 0.6; cursor: wait; transform: none; }
@@ -295,13 +345,13 @@
 
     .status-msg {
       position: fixed;
-      bottom: 90px; left: 50%;
+      bottom: 110px; left: 50%;
       transform: translateX(-50%);
-      background: rgba(255, 90, 90, 0.15);
-      border: 0.5px solid rgba(255, 90, 90, 0.4);
+      background: var(--card-solid);
+      border: 1px solid rgba(255, 90, 90, 0.4);
       color: #ff8888;
       padding: 10px 16px;
-      border-radius: 8px;
+      border-radius: 12px;
       font-size: 13px;
       max-width: 90%;
       text-align: center;
@@ -309,20 +359,21 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.3s;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 12px 32px rgba(0, 0, 0, 0.5);
     }
     .status-msg.show { opacity: 1; }
     .status-msg.success {
-      background: rgba(47, 230, 166, 0.15);
-      border-color: rgba(47, 230, 166, 0.4);
-      color: #2fe6a6;
+      border-color: var(--edge-lite);
+      border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+      color: var(--accent);
     }
 
     /* ── 모달 공통 ── */
     .overlay {
       position: fixed; inset: 0;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
       z-index: 30;
       display: none;
       align-items: center;
@@ -332,10 +383,10 @@
     .overlay.open { display: flex; }
 
     .modal {
-      background: #101419;
-      border: 0.5px solid rgba(255, 255, 255, 0.12);
-      border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+      background: var(--card-solid);
+      border: 1px solid var(--edge);
+      border-radius: 20px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 20px 60px rgba(0, 0, 0, 0.6);
       width: 100%;
       display: flex;
       flex-direction: column;
@@ -348,46 +399,52 @@
     #patternName {
       width: 100%;
       padding: 11px 14px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 0.5px solid rgba(255, 255, 255, 0.15);
-      border-radius: 9px;
-      color: #f4f6f8; font-size: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--edge-lite);
+      border-radius: 12px;
+      color: var(--ink); font-size: 14px;
       font-family: inherit; outline: none;
+      transition: all 0.2s ease;
     }
     #patternName:focus {
-      border-color: rgba(47, 230, 166, 0.5);
-      box-shadow: 0 0 0 3px rgba(47, 230, 166, 0.1);
+      border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
     }
     .save-colors {
       display: flex; gap: 9px; justify-content: center;
       padding: 2px 0;
     }
     .save-colors .color-btn { width: 28px; height: 28px; }
-    .save-colors .color-btn.active { box-shadow: 0 0 0 2px #101419, 0 0 0 4px currentColor; }
+    .save-colors .color-btn.active { box-shadow: 0 0 0 2px var(--card-solid), 0 0 0 4px currentColor; }
 
     .modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
     .modal-btn {
       padding: 9px 16px;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 13px;
       font-weight: 500;
       font-family: inherit;
       cursor: pointer;
       transition: all 0.18s ease;
-      border: 0.5px solid transparent;
+      border: 1px solid transparent;
     }
     .modal-btn.ghost {
       background: transparent;
-      border-color: rgba(255, 255, 255, 0.15);
-      color: rgba(255, 255, 255, 0.7);
+      border-color: var(--edge-lite);
+      color: var(--ink-dim);
     }
     .modal-btn.ghost:hover { background: rgba(255, 255, 255, 0.06); color: #fff; }
     .modal-btn.primary {
-      background: rgba(47, 230, 166, 0.15);
-      border-color: rgba(47, 230, 166, 0.45);
-      color: #2fe6a6;
+      background: rgba(255, 255, 255, 0.08);
+      background: color-mix(in srgb, var(--accent) 13%, transparent);
+      border-color: rgba(255, 255, 255, 0.2);
+      border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+      color: var(--accent);
     }
-    .modal-btn.primary:hover { background: rgba(47, 230, 166, 0.25); }
+    .modal-btn.primary:hover {
+      background: rgba(255, 255, 255, 0.12);
+      background: color-mix(in srgb, var(--accent) 22%, transparent);
+    }
 
     /* 보관함 모달 */
     .lib-modal { max-width: 480px; max-height: 70vh; }
@@ -396,15 +453,15 @@
       align-items: center;
       justify-content: space-between;
       padding: 16px 20px;
-      border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid var(--edge);
     }
     .lib-head h3 { font-size: 15px; font-weight: 600; }
     .lib-close {
       width: 28px; height: 28px;
-      border-radius: 7px;
+      border-radius: 9px;
       border: none;
       background: rgba(255, 255, 255, 0.06);
-      color: rgba(255, 255, 255, 0.6);
+      color: var(--ink-dim);
       cursor: pointer;
       font-size: 14px;
       display: flex; align-items: center; justify-content: center;
@@ -424,7 +481,7 @@
     .lib-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
 
     .lib-empty {
-      color: rgba(255, 255, 255, 0.35);
+      color: var(--label);
       font-size: 13.5px;
       text-align: center;
       padding: 36px 0;
@@ -435,19 +492,22 @@
       align-items: center;
       gap: 12px;
       background: rgba(255, 255, 255, 0.04);
-      border: 0.5px solid rgba(255, 255, 255, 0.08);
-      border-radius: 11px;
+      border: 1px solid var(--edge);
+      border-radius: 14px;
       padding: 10px 12px;
       cursor: pointer;
       transition: all 0.18s ease;
     }
     .lib-item:hover {
-      background: rgba(47, 230, 166, 0.08);
-      border-color: rgba(47, 230, 166, 0.3);
+      background: rgba(255, 255, 255, 0.06);
+      background: color-mix(in srgb, var(--accent) 7%, transparent);
+      border-color: rgba(255, 255, 255, 0.15);
+      border-color: color-mix(in srgb, var(--accent) 30%, transparent);
     }
     .lib-thumb {
-      background: #07090c;
-      border-radius: 7px;
+      background: #0a0a0c;
+      border-radius: 9px;
+      border: 1px solid var(--edge);
       padding: 5px;
       flex-shrink: 0;
       display: flex;
@@ -462,14 +522,15 @@
       text-overflow: ellipsis;
     }
     .lib-meta {
-      font-size: 11.5px;
-      color: rgba(255, 255, 255, 0.4);
+      font-size: 11px;
+      color: var(--label);
+      letter-spacing: 0.04em;
       margin-top: 2px;
     }
     .lib-del {
       flex-shrink: 0;
       width: 30px; height: 30px;
-      border-radius: 7px;
+      border-radius: 9px;
       border: none;
       background: transparent;
       color: rgba(255, 255, 255, 0.35);
@@ -479,19 +540,24 @@
     }
     .lib-del svg { width: 15px; height: 15px; }
     .lib-del:hover {
-      background: rgba(255, 90, 90, 0.14);
+      background: rgba(255, 90, 90, 0.12);
       color: #ff8888;
     }
 
     @media (max-width: 600px) {
-      .controls { gap: 8px; padding: 10px 12px; }
-      .color-btn { width: 26px; height: 26px; }
-      .divider { display: none; }
-      .export-btn { padding: 6px 10px; font-size: 12px; min-width: 78px; }
-      .switch-text { font-size: 12px; }
+      .bottom-bar { padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)); }
+      .controls { gap: 14px; padding: 9px 14px 7px; }
+      .ctrl-group { gap: 6px; }
+      .color-group { gap: 8px; }
+      .color-btn { width: 24px; height: 24px; }
+      .group-label { font-size: 9px; letter-spacing: 0.16em; }
+      .export-btn { padding: 6px 10px; font-size: 12px; min-width: 74px; }
+      .switch-wrap { padding: 2px 0; }
       .mode-tab { padding: 6px 12px; font-size: 12px; }
       .draw-tools { flex-wrap: wrap; justify-content: center; }
       .insert-btn { padding: 9px 10px; font-size: 12px; }
+      .panel { padding: 9px; border-radius: 18px; }
+      #dm { border-radius: 9px; }
     }
   </style>
 </head>
@@ -601,8 +667,10 @@
   </div>
 
   <div class="display">
-    <canvas id="dm"></canvas>
-    <div class="empty-msg" id="emptyMsg" style="display:none;">텍스트를 입력해주세요</div>
+    <div class="panel" id="panel">
+      <canvas id="dm"></canvas>
+      <div class="empty-msg" id="emptyMsg" style="display:none;">텍스트를 입력해주세요</div>
+    </div>
   </div>
 
   <div class="status-msg" id="statusMsg"></div>
@@ -639,22 +707,27 @@
 
   <div class="bottom-bar">
     <div class="controls">
-      <div class="color-group" id="ctrl">
-        <button class="color-btn" data-k="white" aria-label="화이트"></button>
-        <button class="color-btn" data-k="yellow" aria-label="옐로"></button>
-        <button class="color-btn active" data-k="green" aria-label="그린"></button>
-        <button class="color-btn" data-k="blue" aria-label="블루"></button>
-        <button class="color-btn" data-k="pink" aria-label="핑크"></button>
+      <div class="ctrl-group">
+        <div class="color-group" id="ctrl">
+          <button class="color-btn" data-k="white" aria-label="화이트"></button>
+          <button class="color-btn" data-k="yellow" aria-label="옐로"></button>
+          <button class="color-btn active" data-k="green" aria-label="그린"></button>
+          <button class="color-btn" data-k="blue" aria-label="블루"></button>
+          <button class="color-btn" data-k="pink" aria-label="핑크"></button>
+        </div>
+        <span class="group-label">색상</span>
       </div>
-      <div class="divider"></div>
-      <label class="switch-wrap" id="marqueeWrap">
-        <span class="switch-text">자동 흐름</span>
-        <span class="switch">
-          <input type="checkbox" id="marqueeToggle">
-          <span class="switch-track"></span>
-        </span>
-      </label>
-      <div class="divider"></div>
+      <div class="ctrl-group">
+        <label class="switch-wrap" id="marqueeWrap" aria-label="자동 흐름">
+          <span class="switch">
+            <input type="checkbox" id="marqueeToggle">
+            <span class="switch-track"></span>
+          </span>
+        </label>
+        <span class="group-label">자동 흐름</span>
+      </div>
+      <div class="ctrl-group">
+        <div class="export-group">
       <button class="export-btn" id="pngBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -673,6 +746,9 @@
         </svg>
         <span>GIF</span>
       </button>
+        </div>
+        <span class="group-label">내보내기</span>
+      </div>
     </div>
   </div>
 
@@ -735,6 +811,7 @@
       var redoBtn = document.getElementById("redoBtn");
       var dm = document.getElementById("dm");
       var dc = dm.getContext("2d");
+      var panelEl = document.getElementById("panel");
       var emptyMsg = document.getElementById("emptyMsg");
       var marqueeToggle = document.getElementById("marqueeToggle");
       var marqueeWrap = document.getElementById("marqueeWrap");
@@ -951,7 +1028,7 @@
           tc.width = gCols * tStep;
           tc.height = gRows * tStep;
           var tx = tc.getContext("2d");
-          tx.fillStyle = "#07090c";
+          tx.fillStyle = "#0a0a0c";
           tx.fillRect(0, 0, tc.width, tc.height);
           tx.fillStyle = (pat.color && PRESETS[pat.color] ? PRESETS[pat.color] : PRESETS[current]).dot;
           for (var r = 0; r < gRows; r++) {
@@ -1048,9 +1125,15 @@
       // ── 크기 계산 ──
       // UI가 숨겨진 상태에서는 여백을 거의 없애고 화면 전체 사용
       function safeArea() {
-        return uiHidden
-          ? { top: 10, bottom: 10, side: 8 }
-          : { top: SAFE_TOP, bottom: SAFE_BOTTOM, side: SAFE_SIDE };
+        if (uiHidden) return { top: 10, bottom: 10, side: 8 };
+        // 상/하단 바 높이는 모드·화면폭에 따라 달라지므로 실제 높이를 측정
+        var tb = document.querySelector(".top-bar");
+        var bb = document.querySelector(".bottom-bar");
+        return {
+          top: Math.max(SAFE_TOP, (tb ? tb.offsetHeight : 0) + 12),
+          bottom: Math.max(SAFE_BOTTOM, (bb ? bb.offsetHeight : 0) + 12),
+          side: SAFE_SIDE
+        };
       }
 
       // 세로 화면(폰)에서는 전광판을 90도 회전 → 긴 축이 글자 진행 방향
@@ -1061,15 +1144,16 @@
       // across: 글자 진행 방향으로 쓸 수 있는 픽셀, down: 행 방향 픽셀
       function panelAvail() {
         var sa = safeArea();
+        var bez = 28; // .panel 베젤 (패딩+테두리 양쪽 합)
         if (isPanelRotated()) {
           return {
-            across: window.innerHeight - sa.top - sa.bottom,
-            down: window.innerWidth - sa.side * 2
+            across: window.innerHeight - sa.top - sa.bottom - bez,
+            down: window.innerWidth - sa.side * 2 - bez
           };
         }
         return {
-          across: window.innerWidth - sa.side * 2,
-          down: window.innerHeight - sa.top - sa.bottom
+          across: window.innerWidth - sa.side * 2 - bez,
+          down: window.innerHeight - sa.top - sa.bottom - bez
         };
       }
 
@@ -1100,7 +1184,7 @@
         } else {
           visibleCols = cols;
         }
-        dm.classList.toggle("rotated", isPanelRotated());
+        panelEl.classList.toggle("rotated", isPanelRotated());
         var W = visibleCols * step;
         var H = ROWS * step;
         var dpr = window.devicePixelRatio || 1;
@@ -1300,6 +1384,12 @@
       // 스프라이트 캔버스는 셀의 3배 → 강한 glow가 잘리지 않도록 여유 확보 (중심 = 1.5s)
       var SPRITE_SCALE = 3;
       var spriteCache = {};
+
+      function hexA(hex, a) {
+        var n = parseInt(hex.slice(1), 16);
+        return "rgba(" + (n >> 16 & 255) + "," + (n >> 8 & 255) + "," + (n & 255) + "," + a + ")";
+      }
+
       function getDotSprite(key, s, d) {
         var dpr = window.devicePixelRatio || 1;
         var id = key + "|" + s + "|" + d + "|" + dpr;
@@ -1312,10 +1402,15 @@
         var cx = cv.getContext("2d");
         cx.scale(dpr, dpr);
 
-        if (key === "__off") {
+        if (key.indexOf("__off:") === 0) {
+          // 꺼진 도트: 현재 색으로 은은하게 틴트된 LED (실제 소자 느낌)
+          var op = PRESETS[key.slice(6)] || PRESETS.white;
+          var og = cx.createRadialGradient(cen, cen, 0, cen, cen, d / 2);
+          og.addColorStop(0, hexA(op.dot, 0.11));
+          og.addColorStop(1, hexA(op.dot, 0.055));
+          cx.fillStyle = og;
           cx.beginPath();
           cx.arc(cen, cen, d / 2, 0, Math.PI * 2);
-          cx.fillStyle = "rgba(255,255,255,0.04)";
           cx.fill();
         } else {
           var p = PRESETS[key];
@@ -1331,16 +1426,21 @@
           cx.beginPath();
           cx.arc(cen, cen, d / 2, 0, Math.PI * 2);
           cx.fill();
-          // 3) 도트 본체 (글로우 없이 선명하게) + 밝은 코어
+          // 3) 도트 본체: 중심이 밝고 가장자리로 갈수록 어두워지는 LED 질감
           cx.shadowBlur = 0;
+          var body = cx.createRadialGradient(cen, cen, 0, cen, cen, d / 2);
+          body.addColorStop(0, p.dot);
+          body.addColorStop(0.7, hexA(p.dot, 0.85));
+          body.addColorStop(1, hexA(p.dot, 0.6));
+          cx.fillStyle = body;
           cx.beginPath();
           cx.arc(cen, cen, d / 2, 0, Math.PI * 2);
           cx.fill();
-          var grad = cx.createRadialGradient(cen, cen, 0, cen, cen, d / 2);
-          grad.addColorStop(0, "rgba(255,255,255,0.85)");
-          grad.addColorStop(0.45, "rgba(255,255,255,0.15)");
-          grad.addColorStop(1, "rgba(255,255,255,0)");
-          cx.fillStyle = grad;
+          // 4) 작은 흰색 핫스팟
+          var core = cx.createRadialGradient(cen, cen, 0, cen, cen, d * 0.28);
+          core.addColorStop(0, "rgba(255,255,255,0.6)");
+          core.addColorStop(1, "rgba(255,255,255,0)");
+          cx.fillStyle = core;
           cx.beginPath();
           cx.arc(cen, cen, d / 2, 0, Math.PI * 2);
           cx.fill();
@@ -1349,15 +1449,29 @@
         return cv;
       }
 
+      // 도트 점등/소등 페이드 (정적 화면 전용 — 마퀴 스크롤 중엔 잔상이 생기므로 제외)
+      var FADE_IN = 130, FADE_OUT = 220;
+      var cellIntens = null, cellKeys = null;
+      var animRafId = null, animLast = 0;
+
       function paintTo(ctx, offsetCols, vCols, opts) {
         opts = opts || {};
         var s = opts.step || step;
         var d = opts.dot || DOT;
         var useMQ = opts.marquee !== undefined ? opts.marquee : marqueeOn;
+        var anim = opts.anim && !useMQ;
+        var dt = opts.dt || 16.7;
         ctx.clearRect(0, 0, vCols * s, ROWS * s);
         var loopCols = cols + MARQUEE_GAP;
-        var offSprite = getDotSprite("__off", s, d);
+        var offSprite = getDotSprite("__off:" + current, s, d);
+        var animating = false;
 
+        if (anim && (!cellIntens || cellIntens.length !== ROWS * vCols)) {
+          cellIntens = new Float32Array(ROWS * vCols);
+          cellKeys = new Array(ROWS * vCols);
+        }
+
+        var box = s * SPRITE_SCALE;
         for (var r = 0; r < ROWS; r++) {
           for (var c = 0; c < vCols; c++) {
             // 셀 값: 0=꺼짐, 1=현재 색상, 문자열=고정 색상(삽입된 그림)
@@ -1369,19 +1483,51 @@
             } else {
               if (c < cols) v = GRID[r][c];
             }
-            var sp = v
-              ? getDotSprite((v !== 1 && PRESETS[v]) ? v : current, s, d)
-              : offSprite;
-            // 스프라이트 중심(1.5s)을 셀 중심(c*s + s/2)에 맞춤
-            var box = s * SPRITE_SCALE;
-            ctx.drawImage(sp, c * s + s / 2 - box / 2, r * s + s / 2 - box / 2, box, box);
+            var key = v ? ((v !== 1 && PRESETS[v]) ? v : current) : null;
+            var t = v ? 1 : 0;
+            if (anim) {
+              var idx = r * vCols + c;
+              var cur = cellIntens[idx];
+              if (key) cellKeys[idx] = key;
+              else key = cellKeys[idx];
+              if (cur < t) cur = Math.min(1, cur + dt / FADE_IN);
+              else if (cur > t) cur = Math.max(0, cur - dt / FADE_OUT);
+              cellIntens[idx] = cur;
+              if (cur !== t) animating = true;
+              t = cur;
+            }
+            var x = c * s + s / 2;
+            var y = r * s + s / 2;
+            // 스프라이트 중심(1.5s)을 셀 중심에 맞춤
+            ctx.drawImage(offSprite, x - box / 2, y - box / 2, box, box);
+            if (t > 0 && key) {
+              var sp = getDotSprite(key, s, d);
+              // 켜질수록 살짝 커짐 (off 0.92× → on 1.1×)
+              var sc = box * (0.92 + 0.18 * t);
+              if (t < 1) ctx.globalAlpha = t;
+              ctx.drawImage(sp, x - sc / 2, y - sc / 2, sc, sc);
+              if (t < 1) ctx.globalAlpha = 1;
+            }
           }
         }
+        return animating;
       }
 
-      function draw() {
+      function scheduleAnimFrame() {
+        if (animRafId || marqueeOn) return;
+        animRafId = requestAnimationFrame(function(ts) {
+          animRafId = null;
+          var dt = animLast ? Math.min(50, ts - animLast) : 16.7;
+          animLast = ts;
+          draw(dt);
+        });
+      }
+
+      function draw(dt) {
         if (!GRID) return;
-        paintTo(dc, marqueeOffset, visibleCols);
+        var animating = paintTo(dc, marqueeOffset, visibleCols, { anim: true, dt: dt });
+        if (animating) scheduleAnimFrame();
+        else animLast = 0;
       }
 
       // ── 마퀴 ──
@@ -1823,7 +1969,7 @@
             width: w,
             height: h,
             workerScript: gifWorkerBlobUrl,
-            background: "#07090c"
+            background: "#0a0a0c"
           });
 
           var fc = document.createElement("canvas");
@@ -1832,7 +1978,7 @@
           var fx = fc.getContext("2d");
 
           function renderAt(offsetVal) {
-            fx.fillStyle = "#07090c";
+            fx.fillStyle = "#0a0a0c";
             fx.fillRect(0, 0, w, h);
             fx.save();
             fx.translate(pad, pad);
@@ -1902,6 +2048,8 @@
       function setColor(k) {
         if (!PRESETS[k]) return;
         current = k;
+        // UI 액센트가 선택한 LED 색상을 따라감 (참고 디자인의 currentColor 방식)
+        document.documentElement.style.setProperty("--accent", PRESETS[k].dot);
         ctrlEl.querySelectorAll(".color-btn").forEach(function(btn) {
           btn.classList.toggle("active", btn.getAttribute("data-k") === k);
         });
